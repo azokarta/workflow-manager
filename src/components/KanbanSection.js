@@ -55,6 +55,9 @@ function TaskCard({ task, isOverlay = false }) {
         isOverlay ? 'rotate-3 shadow-lg' : 'hover:shadow-md'
       }`}
     >
+      <div className="text-xs text-gray-500 mb-1">
+        ID: {task.id.replace('task-', '')}
+      </div>
       <div className="flex justify-between items-start mb-2">
         <h4 className="font-medium text-gray-900 text-sm flex-1">{task.title}</h4>
         {task.story && (
@@ -63,7 +66,7 @@ function TaskCard({ task, isOverlay = false }) {
           </span>
         )}
       </div>
-      
+
       {task.description && (
         <p className="text-xs text-gray-600 mb-3 line-clamp-2">{task.description}</p>
       )}
@@ -140,7 +143,7 @@ function DroppableColumn({ column, tasks, agents }) {
           {tasks.length}
         </span>
       </div>
-      
+
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-3">
           {tasks.map((task) => (
@@ -175,6 +178,14 @@ export default function KanbanSection() {
 
   useEffect(() => {
     loadData();
+
+    // Set up auto-refresh every 30 seconds
+    const refreshInterval = setInterval(() => {
+      loadData();
+    }, 30000);
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const loadData = async () => {
@@ -231,10 +242,10 @@ export default function KanbanSection() {
       const columnTasks = tasks.filter(t => t.status === activeTask.status);
       const activeIndex = columnTasks.findIndex(t => t.id === activeId);
       const overIndex = columnTasks.findIndex(t => t.id === overId);
-      
+
       const reorderedColumnTasks = arrayMove(columnTasks, activeIndex, overIndex);
       const otherTasks = tasks.filter(t => t.status !== activeTask.status);
-      
+
       const updatedTasks = [...otherTasks, ...reorderedColumnTasks];
       setTasks(updatedTasks);
       saveTasks(updatedTasks);
@@ -352,7 +363,7 @@ export default function KanbanSection() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Новая задача</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Название</label>
